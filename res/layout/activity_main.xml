@@ -36,7 +36,7 @@
         android:layout_width="100dp"
         android:text="Detect"
         style="@style/button_text"
-        android:textSize="20dp"
+        android:textSize="22dp"
         android:layout_above="@+id/placeholder"
         android:layout_centerHorizontal="true"/>
 
@@ -75,7 +75,7 @@
             android:layout_weight="1"/>
 
         <Button
-            android:layout_width="60dp"
+            android:layout_width="80dp"
             android:layout_height="60dp"
             android:background="@drawable/black_button"
             android:text="Mine"
@@ -86,17 +86,39 @@
 
     </LinearLayout>
 
-    <TextView
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:text="Cotton"
-        android:id="@+id/material"
-        android:background="@drawable/black_button"
-        android:gravity="center"
-        style="@style/button_text"
-        android:layout_margin="4dp"
+    <RelativeLayout
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:layout_toRightOf="@id/detect"
+        android:orientation="vertical"
         android:layout_alignBottom="@+id/detect"
         android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/detect"/>
+        android:layout_alignTop="@+id/detect"
+        android:gravity="center">
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            style="@style/button_text"
+            android:textColor="#000000"
+            android:textSize="14dp"
+            android:text="Detecting: "
+            android:id="@+id/smallTextView"/>
+
+        <com.example.org.charles.android.camdetector.OutlineTextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Cotton"
+            android:id="@+id/material"
+            android:gravity="center"
+            style="@style/button_text"
+            android:textColor="#000000"
+            android:textSize="24dp"
+            android:shadowColor="#FFFFFF"
+            android:shadowRadius="10"
+            android:layout_margin="4dp"
+            android:layout_below="@id/smallTextView"
+            android:layout_alignRight="@id/smallTextView"/>
+    </RelativeLayout>
 
 </RelativeLayout>

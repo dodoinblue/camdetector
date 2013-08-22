@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
@@ -17,6 +18,7 @@ import android.graphics.drawable.shapes.RectShape;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.TextPaint;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -134,7 +136,7 @@ public class MainActivity extends Activity {
             r = r + Color.red(pixel);
             g = g + Color.green(pixel);
             b = b + Color.blue(pixel);
-            log(i + " : " + pixel);
+//            log(i + " : " + pixel);
         }
         log("Count: " + i);
         return Color.rgb((int) r / i, (int) g / i, (int) b / i);
@@ -264,6 +266,7 @@ public class MainActivity extends Activity {
         mBtnLiquid.setOnClickListener(mOnClickListener);
 
         mMaterial = (TextView) findViewById(R.id.material);
+        TextPaint tp1 = mMaterial.getPaint();
     }
 
     public void initLiveView() {
