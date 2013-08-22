@@ -9,8 +9,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RectShape;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,6 +21,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -88,24 +92,11 @@ public class MainActivity extends Activity {
 
                 Bitmap picture = BitmapFactory.decodeFile(PATH);
                 if (picture != null) {
-                    Matrix matrix = new Matrix();
-                    matrix.postRotate(90);
+//                    Matrix matrix = new Matrix();
+//                    matrix.postRotate(90);
                     log("picture size (WxH): " + picture.getWidth() + "x" + picture.getHeight());
-                    Bitmap rotatedBitmap = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(),
-                            picture.getHeight(), matrix, true);
-                    saveBitmap(rotatedBitmap);
-                    log("rotatedBitmap size (WxH): " + rotatedBitmap.getWidth() + "x" +
-                            rotatedBitmap.getHeight());
-                    int pixel = picture.getPixel(640, 360);
-                    int alpha = Color.alpha(pixel);
-                    int red = Color.red(pixel);
-                    int blue = Color.blue(pixel);
-                    int green = Color.green(pixel);
-                    String color = String.format("#%02X%02X%02X%02X", alpha, red, green, blue);
-//                    showMessage(color);
-//                    mColorView.setBackgroundColor(pixel);
-//                    mColorText.setText("Color is: " + color);
-                    showDialog("Color is: " + color);
+                    String color = getCenterColor(picture);
+                    showResult(color);
                 } else {
                     log("pic is null");
                 }
@@ -114,6 +105,41 @@ public class MainActivity extends Activity {
             }
         }
     };
+
+    private String getCenterColor(Bitmap picture) {
+        int w = picture.getWidth();
+        int h = picture.getHeight();
+        Bitmap subset = Bitmap.createBitmap(picture, w/2-4, h/2-4, 10, 10, null, true);
+        int[] pixels = new int[100];
+        saveBitmap(subset);
+        subset.getPixels(pixels, 0, 10, 0, 0, 10, 10);
+        int average = averageColor(pixels);
+        log("pixel color: " + average);
+        int alpha = Color.alpha(average);
+        int red = Color.red(average);
+        int blue = Color.blue(average);
+        int green = Color.green(average);
+        String color = String.format("#%02X%02X%02X%02X", alpha, red, green, blue);
+        log("Color: " + color);
+        return color;
+    }
+
+    private int averageColor(int[] pixels) {
+        int i = 0;
+        int r = 0;
+        int g = 0;
+        int b = 0;
+        for(int pixel : pixels) {
+            i++;
+            r = r + Color.red(pixel);
+            g = g + Color.green(pixel);
+            b = b + Color.blue(pixel);
+            log(i + " : " + pixel);
+        }
+        log("Count: " + i);
+        return Color.rgb((int) r / i, (int) g / i, (int) b / i);
+    }
+
     private Button mDetect;
     private TextView mColorText;
 //    private View mColorView;
@@ -139,19 +165,25 @@ public class MainActivity extends Activity {
         mDialog.show();
     }
 
-    private void showDialog(final String result){
+    private void showResult(final String color){
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
         }
+        log("color int: " + Color.parseColor(color));
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Material Detectd!");
-        builder.setMessage(result);
+        builder.setMessage("Color is " + color + "\n Y is " + getYUV_Y(color));
         builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 mDialog.dismiss();
             }
         });
+        ShapeDrawable icon = new ShapeDrawable(new RectShape());
+        icon.setIntrinsicWidth(50);
+        icon.setIntrinsicHeight(50);
+        icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.ADD);
+        builder.setIcon(icon);
         mDialog = builder.create();
         mDialog.show();
     }
@@ -161,7 +193,7 @@ public class MainActivity extends Activity {
         @Override
         public void onClick(View view) {
             if (view == mBtnFabric) {
-                String[] list = {"Cotton", "Wool", "Huaxian"};
+                String[] list = {"Cotton", "Wool", "terylene"};
                 showDialog(list);
             } else if (view == mBtnLiquid) {
                 String[] list = {"Wine", "Milk"};
@@ -169,6 +201,21 @@ public class MainActivity extends Activity {
             }
         }
     };
+
+    private float getYUV_Y(int r, int g, int b) {
+        float result;
+        // Y=0.3R+0.59G+0.11B
+        result = 0.3f * r + 0.59f * g + 0.11f * b;
+        return result;
+    }
+
+    private float getYUV_Y(String color) {
+        int c = Color.parseColor(color);
+        int r = Color.red(c);
+        int g = Color.green(c);
+        int b = Color.blue(c);
+        return getYUV_Y(r, g, b);
+    }
 
     private void showMessage(String s) {
         Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
@@ -199,7 +246,7 @@ public class MainActivity extends Activity {
         mLiveViewHolder = mLiveView.getHolder();
 
         mDetect = (Button) findViewById(R.id.detect);
-        mColorText = (TextView) findViewById(R.id.color_text);
+//        mColorText = (TextView) findViewById(R.id.color_text);
 //        mColorView = findViewById(R.id.color_view);
 
         mDetect.setOnClickListener(new View.OnClickListener() {
