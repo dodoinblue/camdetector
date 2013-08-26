@@ -60,17 +60,17 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:background="@drawable/black_button"
-            android:text="Food"
-            android:id="@+id/food"
+            android:text="Liquid"
+            android:id="@+id/liquid"
             style="@style/button_text"
             android:layout_weight="1"/>
 
         <Button
             android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_height="fill_parent"
             android:background="@drawable/black_button"
-            android:text="Liquid"
-            android:id="@+id/liquid"
+            android:text="Food"
+            android:id="@+id/food"
             style="@style/button_text"
             android:layout_weight="1"/>
 

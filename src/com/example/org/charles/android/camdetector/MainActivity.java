@@ -8,8 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
@@ -23,7 +21,6 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -111,10 +108,10 @@ public class MainActivity extends Activity {
     private String getCenterColor(Bitmap picture) {
         int w = picture.getWidth();
         int h = picture.getHeight();
-        Bitmap subset = Bitmap.createBitmap(picture, w/2-4, h/2-4, 10, 10, null, true);
-        int[] pixels = new int[100];
+        Bitmap subset = Bitmap.createBitmap(picture, w/2-24, h/2-24, 50, 50, null, true);
+        int[] pixels = new int[2500];
         saveBitmap(subset);
-        subset.getPixels(pixels, 0, 10, 0, 0, 10, 10);
+        subset.getPixels(pixels, 0, 50, 0, 0, 50, 50);
         int average = averageColor(pixels);
         log("pixel color: " + average);
         int alpha = Color.alpha(average);
@@ -174,7 +171,9 @@ public class MainActivity extends Activity {
         log("color int: " + Color.parseColor(color));
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Material Detectd!");
-        builder.setMessage("Color is " + color + "\n Y is " + getYUV_Y(color));
+
+        String result = generateResult(getYUV_Y(color));
+        builder.setMessage("Reflectivity value is " + getYUV_Y(color) + "\n" + result);
         builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -190,12 +189,50 @@ public class MainActivity extends Activity {
         mDialog.show();
     }
 
+    private String generateResult(float yuv_y) {
+        String result = "";
+        log("material = " + mMaterial.getText());
+        if(mMaterial.getText().equals("Cotton")) {
+            log("parsing cotton value");
+            result = parseCotton(yuv_y);
+        } else if (mMaterial.getText().equals("Woolen")) {
+            log("parsing woolen value");
+            result = parseWoolen(yuv_y);
+        }
+        return result;
+    }
+
+    private String parseWoolen(float yuv_y) {
+        if( yuv_y > 40.0f && yuv_y < 60.0f) {
+            return "Less than 50% woolen";
+        } else if( yuv_y > 60.1f && yuv_y < 70.0f) {
+            return "About 60% woolen";
+        } else if( yuv_y > 70.1f && yuv_y < 80.0f) {
+            return "About 70% woolen";
+        } else if( yuv_y > 80.1f && yuv_y < 90.0f) {
+            return "About 80% woolen";
+        } else if( yuv_y > 90.1f && yuv_y < 110.0f) {
+            return "About 90% woolen";
+        }
+
+        return "Unknown material";
+    }
+
+    private String parseCotton(float yuv_y) {
+        if (yuv_y > 50.0f && yuv_y < 80.0f) {
+            return "Blended fabric";
+        } else if (yuv_y > 100.0f) {
+            return "Pure cotton";
+        }
+        return "Unknown material";
+    }
+
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View view) {
             if (view == mBtnFabric) {
-                String[] list = {"Cotton", "Wool", "terylene"};
+                String[] list = {"Cotton", "Woolen"};
                 showDialog(list);
             } else if (view == mBtnLiquid) {
                 String[] list = {"Wine", "Milk"};
@@ -292,7 +329,7 @@ public class MainActivity extends Activity {
         }
         parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
         for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
-            if (size.width / size.height == 1280 / 720) {
+            if (size.width * 100 / size.height == 1280 * 100 / 720) {
                 log("Aspect Ratio match! Setting Preview size to : " + size.width + "x" + size
                         .height);
                 parameters.setPreviewSize(size.width, size.height);
