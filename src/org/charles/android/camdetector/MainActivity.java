@@ -1,5 +1,5 @@
 
-package com.example.org.charles.android.camdetector;
+package org.charles.android.camdetector;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -23,8 +23,12 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.sonyericsson.cameraextension.CameraExtension;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,10 +43,12 @@ public class MainActivity extends Activity {
     private Camera mCamera;
     private SurfaceView mLiveView;
     private SurfaceHolder mLiveViewHolder;
+    private Switch mSwitch;
     private boolean mLoaded = false;
-    private String PATH = Environment.getExternalStorageDirectory() + "/detector.jpg";
 
+    private String PATH = Environment.getExternalStorageDirectory() + "/detector.jpg";
     private int mWidth;
+
     private int mHeight;
 
     private Callback mSurfaceHolderCallback = new Callback() {
@@ -67,7 +73,6 @@ public class MainActivity extends Activity {
             mLoaded = false;
         }
     };
-
     Camera.AutoFocusMoveCallback afMoveCallback = new Camera.AutoFocusMoveCallback() {
         @Override
         public void onAutoFocusMoving(boolean b, Camera camera) {
@@ -104,6 +109,7 @@ public class MainActivity extends Activity {
             }
         }
     };
+    private CameraExtension mCameraExtension;
 
     private String getCenterColor(Bitmap picture) {
         int w = picture.getWidth();
@@ -303,7 +309,27 @@ public class MainActivity extends Activity {
         mBtnLiquid.setOnClickListener(mOnClickListener);
 
         mMaterial = (TextView) findViewById(R.id.material);
-        TextPaint tp1 = mMaterial.getPaint();
+
+        mSwitch = (Switch)findViewById(R.id.flash_switch);
+        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                toggleFilter();
+            }
+        });
+    }
+
+    private synchronized void toggleFilter() {
+//        Camera.Parameters parameters = mCamera.getParameters();
+//        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+//        mCamera.setParameters(parameters);
+        reopenCamera();
+    }
+
+    private void reopenCamera() {
+        pauseCamera();
+        resumeCamera();
+
     }
 
     public void initLiveView() {
@@ -348,10 +374,23 @@ public class MainActivity extends Activity {
         super.onResume();
         log("onResume");
         mLiveView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        resumeCamera();
+    }
+
+    private void resumeCamera() {
+        log("onResume");
         mLiveViewHolder.addCallback(mSurfaceHolderCallback);
         mCamera = Camera.open();
+//        if (mCamera == null) {
+//            try {
+//                mCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+//            } catch (RuntimeException e) {
+//            }
+//        } else {
+//        }
+//        mCameraExtension = CameraExtension.open(mCamera, Camera.CameraInfo.CAMERA_FACING_BACK);
         mCamera.setDisplayOrientation(90);
-        mCamera.setAutoFocusMoveCallback(afMoveCallback);
+//        mCamera.setAutoFocusMoveCallback(afMoveCallback);
 //        mCamera.setPreviewCallback(previewCallback);
         if (mLoaded) {
             log("starting preview");
@@ -362,9 +401,20 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        pauseCamera();
+    }
+
+    private void pauseCamera() {
         log("onPause");
         mLiveViewHolder.removeCallback(mSurfaceHolderCallback);
         mCamera.stopPreview();
+        if (mCameraExtension != null) {
+            // Clear Face detect camera.
+            mCameraExtension.setFaceDetectionCallback(null);
+
+            mCameraExtension.release();
+            mCameraExtension = null;
+        }
         mCamera.release();
         mCamera = null;
     }

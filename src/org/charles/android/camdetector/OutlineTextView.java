@@ -1,4 +1,4 @@
-package com.example.org.charles.android.camdetector;
+package org.charles.android.camdetector;
 
 import android.content.Context;
 import android.graphics.Canvas;

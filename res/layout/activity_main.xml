@@ -105,7 +105,7 @@
             android:text="Detecting: "
             android:id="@+id/smallTextView"/>
 
-        <com.example.org.charles.android.camdetector.OutlineTextView
+        <org.charles.android.camdetector.OutlineTextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Cotton"
@@ -120,5 +120,13 @@
             android:layout_below="@id/smallTextView"
             android:layout_alignRight="@id/smallTextView"/>
     </RelativeLayout>
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/flash_switch"
+        android:layout_toLeftOf="@+id/detect"
+        android:layout_alignBaseline="@+id/detect"
+        android:layout_marginRight="20dp"/>
 
 </RelativeLayout>
